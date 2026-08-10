@@ -1,25 +1,24 @@
-type Locator = any;
-type Page = any;
-
-type ElementHandle = any;
-
-type WaitForOptions = {
-  timeout?: number;
-  state?: 'attached' | 'detached' | 'visible' | 'hidden';
-};
+import { Locator, Page } from '@playwright/test';
 
 export class WebUtils {
-  private page: Page;
+  private readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
   }
 
+  // =========================================================
+  // PAGE / NAVIGATION
+  // =========================================================
+
   getPage(): Page {
     return this.page;
   }
 
-  async navigate(url: string, waitUntil: 'load' | 'domcontentloaded' | 'networkidle' = 'load'): Promise<void> {
+  async navigate(
+    url: string,
+    waitUntil: 'load' | 'domcontentloaded' | 'networkidle' = 'load'
+  ): Promise<void> {
     await this.page.goto(url, { waitUntil });
   }
 
@@ -36,259 +35,467 @@ export class WebUtils {
   }
 
   async getTitle(): Promise<string> {
-    return await this.page.title();
+    return this.page.title();
   }
 
-  async getCurrentUrl(): Promise<string> {
+  getCurrentUrl(): string {
     return this.page.url();
   }
 
-  async waitForLoadState(state: 'load' | 'domcontentloaded' | 'networkidle' = 'load', timeout = 30000): Promise<void> {
+  async waitForLoadState(
+    state: 'load' | 'domcontentloaded' | 'networkidle' = 'load',
+    timeout = 30000
+  ): Promise<void> {
     await this.page.waitForLoadState(state, { timeout });
   }
+
+  async waitForUrl(
+    url: string | RegExp,
+    timeout = 30000
+  ): Promise<void> {
+    await this.page.waitForURL(url, { timeout });
+  }
+
+  // =========================================================
+  // LOCATOR
+  // =========================================================
 
   locator(selector: string): Locator {
     return this.page.locator(selector);
   }
 
-  async waitForSelector(selector: string, options: WaitForOptions = {}): Promise<Locator> {
-    const timeout = options.timeout ?? 30000;
-    const state = options.state ?? 'visible';
+  // =========================================================
+  // WAIT METHODS
+  // =========================================================
+
+  async waitForSelector(
+    selector: string,
+    timeout = 30000
+  ): Promise<Locator> {
     const element = this.page.locator(selector);
-    await element.waitFor({ state, timeout });
+
+    await element.waitFor({
+      state: 'visible',
+      timeout,
+    });
+
     return element;
   }
 
-  async waitForVisible(selector: string, timeout = 30000): Promise<Locator> {
-    const element = this.page.locator(selector);
-    await element.waitFor({ state: 'visible', timeout });
-    return element;
+  async waitForVisible(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.waitFor({
+      state: 'visible',
+      timeout,
+    });
   }
 
-  async waitForHidden(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).waitFor({ state: 'hidden', timeout });
+  async waitForHidden(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.waitFor({
+      state: 'hidden',
+      timeout,
+    });
   }
 
-  async click(selector: string, options?: { timeout?: number; force?: boolean; clickCount?: number; delay?: number; }): Promise<void> {
-    const element = this.page.locator(selector);
-    await element.click({
+  // =========================================================
+  // CLICK METHODS
+  // =========================================================
+
+  async click(
+    locator: Locator,
+    options?: {
+      timeout?: number;
+      force?: boolean;
+      clickCount?: number;
+      delay?: number;
+    }
+  ): Promise<void> {
+    await locator.click({
       timeout: options?.timeout ?? 30000,
       force: options?.force ?? false,
-      clickCount: options?.clickCount,
+      clickCount: options?.clickCount ?? 1,
       delay: options?.delay,
     });
   }
 
-  async clickByText(text: string, selector = 'text', options?: { timeout?: number; exact?: boolean; force?: boolean }): Promise<void> {
-    const locator = selector === 'text' ? this.page.getByText(text, { exact: options?.exact ?? false }) : this.page.locator(selector).getByText(text, { exact: options?.exact ?? false });
-    await locator.click({ timeout: options?.timeout ?? 30000, force: options?.force ?? false });
+  async clickByText(
+    text: string,
+    exact = false,
+    timeout = 30000
+  ): Promise<void> {
+    await this.page
+      .getByText(text, { exact })
+      .click({ timeout });
   }
 
-  async doubleClick(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).dblclick({ timeout });
+  async doubleClick(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.dblclick({ timeout });
   }
 
-  async rightClick(selector: Locator): Promise<void> {
-    await this.page.locator(selector).click({ button: 'right'});
+  async rightClick(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.click({
+      button: 'right',
+      timeout,
+    });
   }
 
-  async hover(selector: Locator): Promise<void> {
-    await this.page.locator(selector).hover({});
+  async hover(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.hover({ timeout });
   }
 
-  async fill(selector: Locator, value: string): Promise<void> {
-    await this.page.locator(selector).fill(value);
+  // =========================================================
+  // INPUT METHODS
+  // =========================================================
+
+  async fill(
+    locator: Locator,
+    value: string,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.fill(value, { timeout });
   }
 
-  async type(selector: Locator, value: string, delay = 0, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).type(value, { delay, timeout });
+  async type(
+    locator: Locator,
+    value: string,
+    delay = 0,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.pressSequentially(value, {
+      delay,
+      timeout,
+    });
   }
 
-  async clear(selector: Locator, timeout = 30000): Promise<void> {
-    const element = this.page.locator(selector);
-    await element.fill('', { timeout });
+  async clear(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.fill('', { timeout });
   }
 
-  async selectOption(selector: string, value: string | string[], timeout = 30000): Promise<void> {
-    await this.page.locator(selector).selectOption(value, { timeout });
-  }
-
-  async check(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).check({ timeout });
-  }
-
-  async uncheck(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).uncheck({ timeout });
-  }
-
-  async press(selector: string, key: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).press(key, { timeout });
+  async press(
+    locator: Locator,
+    key: string,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.press(key, { timeout });
   }
 
   async pressKey(key: string): Promise<void> {
     await this.page.keyboard.press(key);
   }
 
-  async getText(selector: string, timeout = 30000): Promise<string> {
-    return await this.page.locator(selector).innerText({ timeout });
+  // =========================================================
+  // CHECKBOX / RADIO
+  // =========================================================
+
+  async check(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.check({ timeout });
   }
 
-  async getTextByLocator(locator: Locator): Promise<string> {
-    return await locator.innerText();
+  async uncheck(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.uncheck({ timeout });
   }
 
-  async getValue(selector: string, timeout = 30000): Promise<string> {
-    return await this.page.locator(selector).inputValue({ timeout });
+  // =========================================================
+  // DROPDOWN
+  // =========================================================
+
+  async selectOption(
+    locator: Locator,
+    value: string | string[],
+    timeout = 30000
+  ): Promise<void> {
+    await locator.selectOption(value, { timeout });
   }
 
-  async getAttribute(selector: string, attributeName: string, timeout = 30000): Promise<string | null> {
-    return await this.page.locator(selector).getAttribute(attributeName, { timeout });
+  // =========================================================
+  // GET TEXT / VALUE / ATTRIBUTE
+  // =========================================================
+
+  async getText(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<string> {
+    return locator.innerText({ timeout });
   }
 
-  async isVisible(selector: string, timeout = 30000): Promise<boolean> {
+  async getTextByLocator(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<string> {
+    return locator.innerText({ timeout });
+  }
+
+  async getValue(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<string> {
+    return locator.inputValue({ timeout });
+  }
+
+  async getAttribute(
+    locator: Locator,
+    attributeName: string,
+    timeout = 30000
+  ): Promise<string | null> {
+    return locator.getAttribute(attributeName, { timeout });
+  }
+
+  async getAllText(
+    locator: Locator
+  ): Promise<string[]> {
+    return locator.allInnerTexts();
+  }
+
+  async count(
+    locator: Locator
+  ): Promise<number> {
+    return locator.count();
+  }
+
+  // =========================================================
+  // ELEMENT VALIDATION
+  // =========================================================
+
+  async isVisible(
+    locator: Locator,
+    timeout = 5000
+  ): Promise<boolean> {
     try {
-      await this.waitForVisible(selector, timeout);
+      await locator.waitFor({
+        state: 'visible',
+        timeout,
+      });
+
       return true;
     } catch {
       return false;
     }
   }
 
-  async isHidden(selector: string, timeout = 30000): Promise<boolean> {
+  async isHidden(
+    locator: Locator,
+    timeout = 5000
+  ): Promise<boolean> {
     try {
-      await this.page.locator(selector).waitFor({ state: 'hidden', timeout });
+      await locator.waitFor({
+        state: 'hidden',
+        timeout,
+      });
+
       return true;
     } catch {
       return false;
     }
   }
 
-  async elementExists(selector: string, timeout = 10000): Promise<boolean> {
+  async elementExists(
+    locator: Locator,
+    timeout = 5000
+  ): Promise<boolean> {
     try {
-      await this.page.locator(selector).waitFor({ state: 'attached', timeout });
+      await locator.waitFor({
+        state: 'attached',
+        timeout,
+      });
+
       return true;
     } catch {
       return false;
     }
   }
 
-  async count(selector: string): Promise<number> {
-    return await this.page.locator(selector).count();
+  // =========================================================
+  // SCROLL / FOCUS
+  // =========================================================
+
+  async scrollIntoView(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.scrollIntoViewIfNeeded({ timeout });
   }
 
-  async getAllText(selector: string): Promise<string[]> {
-    return await this.page.locator(selector).allInnerTexts();
+  async focus(
+    locator: Locator,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.focus({ timeout });
   }
 
-  async waitForUrl(url: string | RegExp, timeout = 30000): Promise<void> {
-    await this.page.waitForURL(url, { timeout });
+  async blur(locator: Locator): Promise<void> {
+    await locator.blur();
   }
 
-  async waitForTimeout(ms: number): Promise<void> {
-    await this.page.waitForTimeout(ms);
+  // =========================================================
+  // DRAG AND DROP
+  // =========================================================
+
+  async dragAndDrop(
+    source: Locator,
+    target: Locator
+  ): Promise<void> {
+    await source.dragTo(target);
   }
 
-  async scrollIntoView(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).scrollIntoViewIfNeeded({ timeout });
+  // =========================================================
+  // JAVASCRIPT
+  // =========================================================
+
+  async evaluate(
+    expression: string | ((arg: any) => any),
+    arg?: any
+  ): Promise<any> {
+    return this.page.evaluate(expression as any, arg);
   }
 
-  async focus(selector: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).focus({ timeout });
+  async evaluateHandle(
+    expression: string | ((arg: any) => any),
+    arg?: any
+  ): Promise<any> {
+    return this.page.evaluateHandle(expression as any, arg);
   }
 
-  async blur(selector: string): Promise<void> {
-    await this.page.locator(selector).blur();
+  async jsClick(locator: Locator): Promise<void> {
+    await locator.evaluate((element) => {
+      (element as HTMLElement).click();
+    });
   }
 
-  async dragAndDrop(sourceSelector: string, targetSelector: string): Promise<void> {
-    await this.page.locator(sourceSelector).dragTo(this.page.locator(targetSelector));
+  // =========================================================
+  // SCREENSHOT
+  // =========================================================
+
+  async takeScreenshot(
+    path: string,
+    fullPage = false
+  ): Promise<void> {
+    await this.page.screenshot({
+      path,
+      fullPage,
+    });
   }
 
-  async evaluate(expression: string | Function, arg?: any): Promise<any> {
-    return await this.page.evaluate(expression as any, arg);
+  // =========================================================
+  // FILE UPLOAD
+  // =========================================================
+
+  async uploadFile(
+    locator: Locator,
+    filePath: string,
+    timeout = 30000
+  ): Promise<void> {
+    await locator.setInputFiles(filePath, { timeout });
   }
 
-  async evaluateHandle(expression: string | Function, arg?: any): Promise<ElementHandle> {
-    return await this.page.evaluateHandle(expression as any, arg);
-  }
-
-  async takeScreenshot(path: string, fullPage = false): Promise<void> {
-    await this.page.screenshot({ path, fullPage });
-  }
-
-  async uploadFile(selector: string, filePath: string, timeout = 30000): Promise<void> {
-    await this.page.locator(selector).setInputFiles(filePath, { timeout });
-  }
+  // =========================================================
+  // DIALOGS / ALERTS
+  // =========================================================
 
   async acceptDialog(): Promise<void> {
-    this.page.on('dialog', async (dialog: any) => {
+    this.page.once('dialog', async (dialog) => {
       await dialog.accept();
     });
   }
 
   async dismissDialog(): Promise<void> {
-    this.page.on('dialog', async (dialog: any) => {
+    this.page.once('dialog', async (dialog) => {
       await dialog.dismiss();
     });
   }
 
   async getAlertText(): Promise<string> {
-    return await this.page.waitForEvent('dialog').then(async (dialog: any) => {
-      const message = dialog.message();
-      await dialog.dismiss();
-      return message;
-    });
+    const dialog = await this.page.waitForEvent('dialog');
+
+    const message = dialog.message();
+
+    await dialog.dismiss();
+
+    return message;
   }
 
-  async setCookie(name: string, value: string, url?: string): Promise<void> {
+  // =========================================================
+  // COOKIES
+  // =========================================================
+
+  async setCookie(
+    name: string,
+    value: string,
+    url: string
+  ): Promise<void> {
     await this.page.context().addCookies([
       {
         name,
         value,
-        url: url ?? this.page.url(),
+        url,
       },
     ]);
   }
 
-  async getCookies(): Promise<any[]> {
-    return await this.page.context().cookies();
+  async getCookies() {
+    return this.page.context().cookies();
   }
 
   async clearCookies(): Promise<void> {
     await this.page.context().clearCookies();
   }
 
-  async refresh(): Promise<void> {
-    await this.page.reload();
-  }
+  // =========================================================
+  // NEW TAB
+  // =========================================================
 
   async openNewTab(url?: string): Promise<Page> {
-    const tab = await this.page.context().newPage();
+    const newPage = await this.page.context().newPage();
+
     if (url) {
-      await tab.goto(url);
+      await newPage.goto(url);
     }
-    return tab;
+
+    return newPage;
   }
 
-  async switchToFrame(selector: string): Promise<void> {
-    const frame = this.page.frameLocator(selector);
-    await frame.locator('body').waitFor();
+  // =========================================================
+  // FRAME
+  // =========================================================
+
+  getFrame(selector: string) {
+    return this.page.frameLocator(selector);
   }
 
-  async switchToDefaultContent(): Promise<void> {
-    await this.page.mainFrame().waitForLoadState('domcontentloaded');
-  }
+  // =========================================================
+  // CONSOLE LOGS
+  // =========================================================
 
-  async getConsoleLogs(): Promise<any[]> {
-    const logs: any[] = [];
-    this.page.on('console', (message: any) => logs.push(message.text()));
-    return logs;
-  }
+  captureConsoleLogs(): string[] {
+    const logs: string[] = [];
 
-  async jsClick(selector: string): Promise<void> {
-    await this.page.locator(selector).evaluate((element: any) => {
-      (element as HTMLElement).click();
+    this.page.on('console', (message) => {
+      logs.push(message.text());
     });
+
+    return logs;
   }
 }
 

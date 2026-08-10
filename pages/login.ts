@@ -14,9 +14,9 @@ export class LoginPage {
 
         this.page = page;
         this.wt = new WebUtils(page);
-        this.username = page.locator('input[name="username"]');
-        this.password = page.locator('input[name="password"]');
-        this.submit = page.locator('button[type="submit"]');
+        this.username = page.getByPlaceholder('Username');
+        this.password = page.getByPlaceholder('Password');
+        this.submit = page.locator('//input[@name="login-button"]');
     }
     async enterUsername(Username: string) {
         await this.wt.fill(this.username, Username);
