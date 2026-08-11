@@ -21,7 +21,7 @@ export default defineConfig({
   /* Shared settings */
   use: {
     /* Headless browser */
-    headless: false,
+    headless: true,
 
     /* Screenshot only on failure */
     screenshot: 'only-on-failure',
