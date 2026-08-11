@@ -11,15 +11,22 @@ for (const user of loginData) {
     const lp = new LoginPage(page);
 
     await lp.enterUsername(user.username);
-
     await lp.enterPassword(user.password);
-
     await lp.clickSubmit();
 
-    await expect(page).toHaveURL(
-      'https://www.saucedemo.com/inventory.html'
-    );
+    if (user.expectedResult === 'success') {
+
+      await expect(page).toHaveURL(
+        'https://www.saucedemo.com/inventory.html'
+      );
+
+    } else {
+
+      await expect(
+        page.locator('[data-test="error"]')
+      ).toBeVisible();
+
+    }
 
   });
-
 }
