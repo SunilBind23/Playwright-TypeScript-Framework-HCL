@@ -38,9 +38,7 @@ for (const user of loginData) {
 
     } else {
 
-      await expect(
-        page.locator('[data-test="error"]')
-      ).toBeVisible();
+      await expect(page.locator('[data-test="error"]')).toBeVisible();
     }
   });
 }
