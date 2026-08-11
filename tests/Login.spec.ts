@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/login';
 import loginData from '../testdata/loginData.json';
+import WebUtils from '../utils/webutils.ts';
+import { HomePage } from '../pages/HomePage.ts';
 
 for (const user of loginData) {
 
@@ -8,7 +10,9 @@ for (const user of loginData) {
 
     await page.goto('https://www.saucedemo.com/');
 
-    const lp = new LoginPage(page);
+    const wt = new WebUtils(page);
+
+    const lp = new LoginPage(page, wt);
 
     await lp.enterUsername(user.username);
     await lp.enterPassword(user.password);
@@ -20,13 +24,23 @@ for (const user of loginData) {
         'https://www.saucedemo.com/inventory.html'
       );
 
+      // Home Page
+      const hp = new HomePage(page, wt);
+
+      const isVisible = await hp.swaglabLogoIsVisible();
+
+      if (isVisible) {
+        const logoText = await hp.swaglbabLogoText();
+        console.log(`Swaglab Logo Text: ${logoText}`);
+      } else {
+        console.log('Swaglab Logo is not visible on the page.');
+      }
+
     } else {
 
       await expect(
         page.locator('[data-test="error"]')
       ).toBeVisible();
-
     }
-
   });
 }

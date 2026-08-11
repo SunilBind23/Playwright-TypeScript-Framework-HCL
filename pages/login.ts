@@ -10,10 +10,9 @@ export class LoginPage {
 
     readonly page: Page;
 
-    constructor(page: Page) {
-
+    constructor(page: Page,wbt: WebUtils) {
+        this.wt = wbt;
         this.page = page;
-        this.wt = new WebUtils(page);
         this.username = page.getByPlaceholder('Username');
         this.password = page.getByPlaceholder('Password');
         this.submit = page.locator('//input[@name="login-button"]');
