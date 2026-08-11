@@ -1,7 +1,8 @@
-import { Locator } from '@playwright/test'
+import { Locator, Page } from '@playwright/test'
 import { WebUtils } from '../utils/webutils'
 
 export class HomePage {
+    readonly swaglabLogo: Locator
     readonly products: Locator;
     readonly pageTitle: Locator;
     readonly productName: Locator;
@@ -19,12 +20,13 @@ export class HomePage {
     readonly searchInput: Locator;
     readonly sortDropdown: Locator;
     readonly filterButton: Locator
-    readonly page: Locator;
     wt: WebUtils;
+    readonly page: Page;
 
-    constructor(page: Locator, wt: WebUtils) {
-        this.page = page;
-        this.wt = wt;
+    constructor(page: Page, wbt: WebUtils) {
+         this.page = page;
+        this.wt = wbt;
+        this.swaglabLogo = page.locator("//div[@class='app_logo']") ;
         this.products = page.locator('.inventory_item');
         this.pageTitle = page.locator('.title');
         this.productDescription = page.locator('.inventory_item_desc');
@@ -43,6 +45,14 @@ export class HomePage {
         this.sortDropdown = page.locator('[data-test="sort"]');
         this.filterButton = page.locator('[data-test="filter"]');
     }
+
+   async swaglabLogoIsVisible(): Promise<boolean> {
+        return this.swaglabLogo.isVisible();
+    }
+    async swaglbabLogoText(): Promise<string> {
+        return this.swaglabLogo.innerText();
+    }
+
 
     async getProductCount(): Promise<number> {
         return await this.products.count();
