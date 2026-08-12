@@ -3,7 +3,7 @@ import { WebUtils } from '../utils/webutils'
 
 export class HomePage {
     readonly swaglabLogo: Locator
-   // readonly products: Locator;
+    // readonly products: Locator;
     readonly pageTitle: Locator;
     readonly productName: Locator;
     readonly productPrice: Locator;
@@ -27,19 +27,19 @@ export class HomePage {
         this.page = page;
         this.wt = wbt;
         this.swaglabLogo = page.locator("//div[@class='app_logo']");
-     //   this.products = page.locator('.inventory_item');
+        //   this.products = page.locator('.inventory_item');
         // this.pageTitle = page.locator('.title');
 
         this.productDescription = page.locator("//div[@class='inventory_item_desc']");
 
-        this.productName = page.locator("//div[@class='inventory_item_name']");
+        this.productName = page.locator("//div[@class='inventory_item_name ']");
 
         this.productPrice = page.locator("//div[@class='inventory_item_price']");
 
         this.addToCartButton = page.locator("//button[contains(text(),'Add to cart')]");
 
         this.removeFromCartButton = page.locator("//button[contains(text(),'Remove')]");
-        
+
         this.cartBadge = page.locator('.shopping_cart_badge');
         this.cartButton = page.locator('.shopping_cart_link');
 
@@ -66,42 +66,16 @@ export class HomePage {
     }
     // extract all product names
     async getProductNames(): Promise<string[]> {
-        const productNames: string[] = [];
-        const productCount = await this.productName.count();
-        for (let i = 0; i < productCount; i++) {
-            const productName = await this.productName.nth(i).locator(this.productName).innerText();
-            productNames.push(productName);
-        }
-        return productNames;
+        return await this.productName.allTextContents();
     }
 
-    // getProduct name by index
-    async getProductNameByIndex(index: number): Promise<string> {
-        const productCount = await this.productName.count();   
-        if (index < 0 || index >= productCount) {
-            throw new Error('Index out of bounds');
-        }
-        return await this.productName.nth(index).locator(this.productName).innerText();
-    }
-    // extract all product prices
     async getProductPrices(): Promise<string[]> {
-        const productPrices: string[] = [];
-        const productCount = await this.productName.count();
-        for (let i = 0; i < productCount; i++) {
-            const productPrice = await this.productName.nth(i).locator(this.productPrice).innerText();
-            productPrices.push(productPrice);
-        }
-        return productPrices;
+        return await this.productPrice.allTextContents();
     }
-    // extract all product descriptions
+
     async getProductDescriptions(): Promise<string[]> {
-        const productDescriptions: string[] = [];
-        const productCount = await this.productName.count();
-        for (let i = 0; i < productCount; i++) {
-            const productDescription = await this.productName.nth(i).locator(this.productDescription).innerText();
-            productDescriptions.push(productDescription);
-        }
-        return productDescriptions;
+        return await this.productDescription.allTextContents();
     }
+
 
 }
