@@ -1,108 +1,172 @@
 import { test, expect } from '@playwright/test';
+
 import { LoginPage } from '../pages/login';
 import { HomePage } from '../pages/HomePage';
-import { WebUtils } from '../utils/webutils';
 import { CartPage } from '../pages/CartPage';
 import { UserInformationPage } from '../pages/UserInformationPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { WebUtils } from '../utils/webutils';
+import { ConfirmOrderPage } from '../pages/ConfirmOrderPage';
 
 test('Verify Complete Order', async ({ page }) => {
 
+    // --------------------------------------------------
+    // Setup
+    // --------------------------------------------------
     const wbt = new WebUtils(page);
 
-    // Navigate to application
+    // --------------------------------------------------
+    // Login
+    // --------------------------------------------------
     await page.goto('https://www.saucedemo.com/');
 
-    // Login
     const loginPage = new LoginPage(page, wbt);
     await loginPage.login('standard_user', 'secret_sauce');
 
-    // Home page
+    // --------------------------------------------------
+    // Home Page
+    // --------------------------------------------------
     const homePage = new HomePage(page, wbt);
 
+    // Sort products by price: Low to High
     await homePage.selectSortOption('Price (low to high)');
-    const pnames = await homePage.getProductNames();
-    const pprices = await homePage.getProductPrices();
-    console.log('Product Names Count:', pnames.length);
-    //  console.log('Product Names:', pnames);
-
-    console.log('Product Prices Count:', pprices.length);
-    // console.log('Product Prices:', pprices);
-
-    const pdescriptions = await homePage.getProductDescriptions();
-    console.log('Product Descriptions Count:', pdescriptions.length);
-    //console.log('Product Descriptions:', pdescriptions);
-
-    // Sort products by price: low to high
-
 
     // Get product information
-    // const pnames: string[] = await homePage.getProductNames();
-    // const pprices: string[] = await homePage.getProductPrices();
-    //   const pdescriptions: string[] = await homePage.getProductDescriptions();
+    const productNames = await homePage.getProductNames();
+    const productPrices = await homePage.getProductPrices();
+    const productDescriptions = await homePage.getProductDescriptions();
+
+    console.log('Product Names Count:', productNames.length);
+    console.log('Product Prices Count:', productPrices.length);
+    console.log('Product Descriptions Count:', productDescriptions.length);
 
     // Display product information
-    console.log('=================Product Information:==========================');
-    for (let i = 0; i < pnames.length; i++) {
-        console.log(`Product ${i + 1}:`);
-        console.log(`Name: ${pnames[i]}`);
-        console.log(`Price: ${pprices[i]}`);
-        console.log(`Description: ${pdescriptions[i]}`);
-        console.log('================================');
+    console.log('================= Product Information =================');
+
+    for (let i = 0; i < productNames.length; i++) {
+        console.log(`Product ${i + 1}`);
+        console.log(`Name: ${productNames[i]}`);
+        console.log(`Price: ${productPrices[i]}`);
+        console.log(`Description: ${productDescriptions[i]}`);
+        console.log('--------------------------------');
     }
 
-    await homePage.addToCartButton.last().click();
+    // --------------------------------------------------
+    // Select Last Product
+    // --------------------------------------------------
+    const lastIndex = productNames.length - 1;
 
+    const expectedProductName = productNames[lastIndex];
+    const expectedProductPrice = productPrices[lastIndex];
+    const expectedProductDescription = productDescriptions[lastIndex];
 
-    // Get last product
-    const lastIndex = pnames.length - 1;
-
-    const expectedProductName = pnames[lastIndex];
-    const expectedProductPrice = pprices[lastIndex];
-
-    console.log('=================Selected Product:==========================');
+    console.log('================= Selected Product =================');
     console.log(`Selected Product: ${expectedProductName}`);
     console.log(`Selected Price: ${expectedProductPrice}`);
 
     // Add last product to cart
+    await homePage.addToCartButton.last().click();
 
-
-    // Open cart
+    // --------------------------------------------------
+    // Cart
+    // --------------------------------------------------
     await homePage.cartButton.click();
 
-    // Cart page
     const cartPage = new CartPage(page, wbt);
 
     const cartProductNames = await cartPage.getProductNames();
     const cartProductPrices = await cartPage.getProductPrices();
 
-    console.log('=================Added Product in Cart:==========================');
-    console.log('Cart Product:', cartProductNames[0]);
-    console.log('Cart Price:', cartProductPrices[0]);
+    console.log('================= Cart Product =================');
+    console.log(`Cart Product: ${cartProductNames[0]}`);
+    console.log(`Cart Price: ${cartProductPrices[0]}`);
 
-    // Verify product
+    // Verify product name
     expect(cartProductNames).toContain(expectedProductName);
 
-    // Verify price
+    // Verify product price
     expect(cartProductPrices).toContain(expectedProductPrice);
-    // navigate to checkout
+
+    // --------------------------------------------------
+    // Checkout - User Information
+    // --------------------------------------------------
     await cartPage.clickCheckoutButton();
-    const userInfo: UserInformationPage = new UserInformationPage(page, wbt);
+
+    const userInfo = new UserInformationPage(page, wbt);
+
     await userInfo.enterFirstName('John');
     await userInfo.enterLastName('Doe');
     await userInfo.enterPostalCode('12345');
 
+    // Get entered information
+    const firstName = await userInfo.getFirstName();
+    const lastName = await userInfo.getLastName();
+    const postalCode = await userInfo.getPostalCode();
 
-    console.log('=================Entered User Information:==========================');
+    console.log('================= User Information =================');
+    console.log(`First Name: ${firstName}`);
+    console.log(`Last Name: ${lastName}`);
+    console.log(`Postal Code: ${postalCode}`);
 
-    console.log('First Name:', await userInfo.getFirstName());
-    console.log('Last Name:', await userInfo.getLastName());
-    console.log('Postal Code:', await userInfo.getPostalCode());
+    // Verify user information
+    expect(firstName).toBe('John');
+    expect(lastName).toBe('Doe');
+    expect(postalCode).toBe('12345');
 
-    await page.pause();
+    await userInfo.clickContinueButton();
 
-    // verify entered information
-    expect(await userInfo.getFirstName()).toBe('John');
-    expect(await userInfo.getLastName()).toBe('Doe');
-    expect(await userInfo.getPostalCode()).toBe('12345');
-    // await userInfo.clickContinueButton();
+    // --------------------------------------------------
+    // Checkout Overview
+    // --------------------------------------------------
+    const checkoutPage = new CheckoutPage(page, wbt);
+
+    const actualProductName = await checkoutPage.getProductName();
+    const actualProductPrice = await checkoutPage.getProductPrice();
+    const actualProductDescription = await checkoutPage.getProductDescription();
+
+    console.log('================= Checkout Product =================');
+    console.log(`Product Name: ${actualProductName}`);
+    console.log(`Product Price: ${actualProductPrice}`);
+    console.log(`Product Description: ${actualProductDescription}`);
+
+    const actualTotalPrice = await checkoutPage.getTotalPrice();
+    const actualTax = await checkoutPage.getTax();
+    const actualSubtotal = await checkoutPage.getSubtotal();
+
+    console.log('================= Checkout Summary =================');
+    console.log(`Subtotal: ${actualSubtotal}`);
+    console.log(`Tax: ${actualTax}`);
+    console.log(`Total: ${actualTotalPrice}`);
+    const productPrice = parseFloat(actualProductPrice.replace('$', ''));
+    const subtotal = parseFloat(actualSubtotal.replace('Item total: $', ''));
+    const tax = parseFloat(actualTax.replace('Tax: $', ''));
+    const total = parseFloat(actualTotalPrice.replace('Total: $', ''));
+
+    // Verify subtotal
+    expect(subtotal).toBeCloseTo(productPrice, 2);
+
+    // Verify total = subtotal + tax
+    expect(total).toBeCloseTo(subtotal + tax, 2);
+
+    // Verify checkout product details
+    expect(actualProductName).toBe(expectedProductName);
+    expect(actualProductPrice).toBe(expectedProductPrice);
+    expect(actualProductDescription).toBe(expectedProductDescription);
+
+    // --------------------------------------------------
+    // Complete Order
+    // --------------------------------------------------
+    await checkoutPage.clickFinishButton();
+
+    // Screenshot of order confirmation
+    await page.screenshot({ path: 'reports/order_confirmation.png', fullPage: true });
+
+    const confirmOrderPage = new ConfirmOrderPage(page, wbt);
+    // verify order confirmation message
+    const orderConfirmationMessage = await confirmOrderPage.getOrderConfirmationMessage();
+    console.log('================= Order Confirmation =================');
+    console.log(`Order Confirmation Message: ${orderConfirmationMessage}`);
+    expect(orderConfirmationMessage).toBe('Thank you for your order!');
+    confirmOrderPage.clickBackHomeButton();
+    
 });

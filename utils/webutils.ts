@@ -234,11 +234,8 @@ export class WebUtils {
   // GET TEXT / VALUE / ATTRIBUTE
   // =========================================================
 
-  async getText(
-    locator: Locator,
-    timeout = 30000
-  ): Promise<string> {
-    return locator.innerText({ timeout });
+  async getText(locator: Locator, ElText: string): Promise<string> {
+    return locator.innerText();
   }
 
   async getTextByLocator(
