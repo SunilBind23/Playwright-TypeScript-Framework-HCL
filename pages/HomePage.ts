@@ -4,7 +4,7 @@ import { WebUtils } from '../utils/webutils'
 export class HomePage {
     readonly swaglabLogo: Locator
     // readonly products: Locator;
-    readonly pageTitle: Locator;
+    // readonly pageTitle: Locator;
     readonly productName: Locator;
     readonly productPrice: Locator;
     readonly productDescription: Locator;
@@ -20,6 +20,8 @@ export class HomePage {
     readonly searchInput: Locator;
     readonly sortDropdown: Locator;
     readonly filterButton: Locator
+    readonly navbar: Locator;
+    readonly logOut: Locator;
     wt: WebUtils;
     readonly page: Page;
 
@@ -51,6 +53,8 @@ export class HomePage {
         this.searchInput = page.locator('#search_input');
         this.sortDropdown = page.locator('.product_sort_container');
         this.filterButton = page.locator('#filter_button');
+        this.navbar = page.locator("//button[@id='react-burger-menu-btn']");
+        this.logOut = page.locator("//a[text()='Logout']")
     }
 
     async swaglabLogoIsVisible(): Promise<boolean> {
@@ -76,6 +80,11 @@ export class HomePage {
     async getProductDescriptions(): Promise<string[]> {
         return await this.productDescription.allTextContents();
     }
-
+    async clickOnNavbar() {
+        await this.navbar.click();
+    }
+    async clickOnLogout() {
+        await this.logOut.click();
+    }
 
 }

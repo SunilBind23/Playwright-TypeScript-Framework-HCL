@@ -167,6 +167,9 @@ test('Verify Complete Order', async ({ page }) => {
     console.log('================= Order Confirmation =================');
     console.log(`Order Confirmation Message: ${orderConfirmationMessage}`);
     expect(orderConfirmationMessage).toBe('Thank you for your order!');
-    confirmOrderPage.clickBackHomeButton();
-    
+    await confirmOrderPage.clickBackHomeButton();
+    // Navigate to logout 
+    await homePage.clickOnNavbar();
+    await homePage.clickOnLogout();
+
 });
