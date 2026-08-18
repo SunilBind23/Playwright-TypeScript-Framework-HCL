@@ -7,6 +7,7 @@ import { UserInformationPage } from '../pages/UserInformationPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 import { WebUtils } from '../utils/webutils';
 import { ConfirmOrderPage } from '../pages/ConfirmOrderPage';
+import { ENV } from '../config/env';
 
 test('Verify Complete Order', async ({ page }) => {
 
@@ -18,10 +19,11 @@ test('Verify Complete Order', async ({ page }) => {
     // --------------------------------------------------
     // Login
     // --------------------------------------------------
-    await page.goto('https://www.saucedemo.com/');
+
+    await page.goto(ENV.baseUrl);
 
     const loginPage = new LoginPage(page, wbt);
-    await loginPage.login('standard_user', 'secret_sauce');
+    await loginPage.login(ENV.username, ENV.password);
 
     // --------------------------------------------------
     // Home Page
