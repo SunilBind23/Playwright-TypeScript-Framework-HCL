@@ -8,6 +8,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { WebUtils } from '../utils/webutils';
 import { ConfirmOrderPage } from '../pages/ConfirmOrderPage';
 import { ENV } from '../config/env';
+import customerData  from '../testdata/customerData.json';
 
 test('Verify Complete Order', async ({ page }) => {
 
@@ -97,9 +98,9 @@ test('Verify Complete Order', async ({ page }) => {
 
     const userInfo = new UserInformationPage(page, wbt);
 
-    await userInfo.enterFirstName('John');
-    await userInfo.enterLastName('Doe');
-    await userInfo.enterPostalCode('12345');
+    await userInfo.enterFirstName(customerData.customer.firstName);
+    await userInfo.enterLastName(customerData.customer.lastName);
+    await userInfo.enterPostalCode(customerData.customer.postalCode);
 
     // Get entered information
     const firstName = await userInfo.getFirstName();
@@ -112,9 +113,9 @@ test('Verify Complete Order', async ({ page }) => {
     console.log(`Postal Code: ${postalCode}`);
 
     // Verify user information
-    expect(firstName).toBe('John');
-    expect(lastName).toBe('Doe');
-    expect(postalCode).toBe('12345');
+    expect(firstName).toBe(customerData.customer.firstName);
+    expect(lastName).toBe(customerData.customer.lastName);
+    expect(postalCode).toBe(customerData.customer.postalCode);
 
     await userInfo.clickContinueButton();
 
