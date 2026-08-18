@@ -25,6 +25,7 @@ test('Verify Complete Order', async ({ page }) => {
     const loginPage = new LoginPage(page, wbt);
     await loginPage.login(ENV.username, ENV.password);
 
+    console.log("Login Success")
     // --------------------------------------------------
     // Home Page
     // --------------------------------------------------
