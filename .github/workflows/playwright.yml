@@ -3,13 +3,13 @@ name: Playwright Tests
 on:
   workflow_dispatch:
     inputs:
+
       branch:
         description: 'Select Branch'
         required: true
         type: choice
         options:
           - main
-          - master
           - development
           - staging
 
@@ -19,15 +19,27 @@ on:
         type: choice
         options:
           - dev
-          - staging/UAT
+          - staging
           - production
+
+      test_type:
+        description: 'Select Test Type'
+        required: true
+        type: choice
+        options:
+          - smoke
+          - regression
+          - all
 
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
 
+    environment:
+      name: ${{ inputs.environment }}
+
     steps:
+
       - name: Checkout Selected Branch
         uses: actions/checkout@v4
         with:
@@ -44,10 +56,29 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright Tests
+      - name: Run Smoke Tests
+        if: ${{ inputs.test_type == 'smoke' }}
+        run: npx playwright test --grep @smoke
+        env:
+          SB_BASE_URL: ${{ secrets.SB_BASE_URL }}
+          SB_USERNAME: ${{ secrets.SB_USERNAME }}
+          SB_PASSWORD: ${{ secrets.SB_PASSWORD }}
+
+      - name: Run Regression Tests
+        if: ${{ inputs.test_type == 'regression' }}
+        run: npx playwright test --grep @regression
+        env:
+          SB_BASE_URL: ${{ secrets.SB_BASE_URL }}
+          SB_USERNAME: ${{ secrets.SB_USERNAME }}
+          SB_PASSWORD: ${{ secrets.SB_PASSWORD }}
+
+      - name: Run All Tests
+        if: ${{ inputs.test_type == 'all' }}
         run: npx playwright test
         env:
-          TEST_ENV: ${{ inputs.environment }}
+          SB_BASE_URL: ${{ secrets.SB_BASE_URL }}
+          SB_USERNAME: ${{ secrets.SB_USERNAME }}
+          SB_PASSWORD: ${{ secrets.SB_PASSWORD }}
 
       - name: Upload Playwright Report
         if: always()
