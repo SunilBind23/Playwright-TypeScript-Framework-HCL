@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 function getEnv(name: string): string {
+
     const value = process.env[name];
 
     if (!value) {
@@ -13,7 +14,7 @@ function getEnv(name: string): string {
 }
 
 export const ENV = {
-    baseUrl: process.env.SB_BASE_URL!,
-    username: process.env.SB_USERNAME!,
-    password: process.env.SB_PASSWORD!,
+    baseUrl: getEnv('BASE_URL'),
+    username: getEnv('USERNAME'),
+    password: getEnv('PASSWORD')
 };
