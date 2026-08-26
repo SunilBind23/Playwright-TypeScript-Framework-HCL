@@ -6,7 +6,7 @@ import { HomePage } from '../pages/HomePage.ts';
 
 for (const user of loginData) {
 
-  test(`Login Test - ${user.username}`, async ({ page }) => {
+  test(`Login Test @smoke - ${user.username}`, async ({ page }) => {
 
     await page.goto('https://www.saucedemo.com/');
 
