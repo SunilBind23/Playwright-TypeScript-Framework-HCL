@@ -10,7 +10,7 @@ import { ConfirmOrderPage } from '../pages/ConfirmOrderPage';
 import { ENV } from '../config/env';
 import customerData  from '../testdata/customerData.json';
 
-test('Verify Complete Order', async ({ page }) => {
+test('Verify Complete Order @smoke', async ({ page }) => {
 
     // --------------------------------------------------
     // Setup
