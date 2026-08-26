@@ -14,7 +14,7 @@ function getEnv(name: string): string {
 }
 
 export const ENV = {
-    baseUrl: getEnv('BASE_URL'),
-    username: getEnv('USERNAME'),
-    password: getEnv('PASSWORD')
+    baseUrl: getEnv('APP_BASE_URL'),
+    username: getEnv('APP_USERNAME'),
+    password: getEnv('APP_PASSWORD')
 };
