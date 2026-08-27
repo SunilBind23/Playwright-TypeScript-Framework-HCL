@@ -1,6 +1,18 @@
 name: Playwright Tests
 
 on:
+
+  # Automatically run regression when code is pushed
+  push:
+    branches:
+      - feature/opportunity
+
+  # Automatically run regression when PR is created/updated
+  pull_request:
+    branches:
+      - main
+
+  # Manual execution
   workflow_dispatch:
     inputs:
 
@@ -22,6 +34,7 @@ on:
           - regression
           - all
 
+
 jobs:
 
   test:
@@ -30,9 +43,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    # Select GitHub Environment
+    # For automatic runs use dev.
+    # For manual runs use selected environment.
     environment:
-      name: ${{ inputs.environment }}
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
+
+    # Get secrets from selected environment
+    env:
+      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+      APP_USERNAME: ${{ secrets.APP_USERNAME }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
     steps:
 
@@ -51,33 +71,44 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # 5. Display selected configuration
-      - name: Display Configuration
+      - name: Display Test Configuration
         run: |
-          echo "Environment: ${{ inputs.environment }}"
-          echo "Test Type: ${{ inputs.test_type }}"
-          echo "BASE URL is configured: ${{ secrets.APP_BASE_URL != '' }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}"
 
-      - name: Run Smoke Tests
-        if: ${{ inputs.test_type == 'smoke' }}
+      # Automatic push / PR → Regression
+      - name: Run Automatic Regression Tests
+        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+        run: npx playwright test --grep @regression
+
+      # Manual Smoke
+      - name: Run Manual Smoke Tests
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'smoke' }}
         run: npx playwright test --grep @smoke
         env:
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
-      - name: Run Regression Tests
-        if: ${{ inputs.test_type == 'regression' }}
+      # Manual Regression
+      - name: Run Manual Regression Tests
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'regression' }}
         run: npx playwright test --grep @regression
         env:
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
-      - name: Run All Tests
-        if: ${{ inputs.test_type == 'all' }}
+      # Manual All
+      - name: Run Manual All Tests
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'all' }}
         run: npx playwright test
-        env:
-          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-          APP_USERNAME: ${{ secrets.APP_USERNAME }}
-          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+        
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
