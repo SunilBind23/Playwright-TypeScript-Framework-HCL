@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Handle Alert', async function ({ page }) {
+test('Handle Alert @regression', async function ({ page }) {
 
     await page.goto('https://demoqa.com/alerts');
 
