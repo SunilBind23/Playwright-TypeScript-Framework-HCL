@@ -36,22 +36,18 @@ jobs:
 
     steps:
 
-      # 1. Checkout selected branch
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # 3. Install dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # 4. Install Playwright browsers
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
@@ -60,8 +56,8 @@ jobs:
         run: |
           echo "Environment: ${{ inputs.environment }}"
           echo "Test Type: ${{ inputs.test_type }}"
+          echo "BASE URL is configured: ${{ secrets.APP_BASE_URL != '' }}"
 
-      # 6. Run Smoke Tests
       - name: Run Smoke Tests
         if: ${{ inputs.test_type == 'smoke' }}
         run: npx playwright test --grep @smoke
@@ -70,7 +66,6 @@ jobs:
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
-      # 7. Run Regression Tests
       - name: Run Regression Tests
         if: ${{ inputs.test_type == 'regression' }}
         run: npx playwright test --grep @regression
@@ -79,7 +74,6 @@ jobs:
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
-      # 8. Run All Tests
       - name: Run All Tests
         if: ${{ inputs.test_type == 'all' }}
         run: npx playwright test
