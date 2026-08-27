@@ -74,3 +74,11 @@ jobs:
       - name: Run All Tests
         if: ${{ inputs.test_type == 'all' }}
         run: npx playwright test
+        
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
