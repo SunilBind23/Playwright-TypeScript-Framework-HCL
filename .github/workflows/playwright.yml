@@ -34,12 +34,6 @@ jobs:
     environment:
       name: ${{ inputs.environment }}
 
-    # Get secrets from selected environment
-    env:
-      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-      APP_USERNAME: ${{ secrets.APP_USERNAME }}
-      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
-
     steps:
 
       - name: Checkout Code
@@ -57,7 +51,8 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Display Test Configuration
+      # 5. Display selected configuration
+      - name: Display Configuration
         run: |
           echo "Environment: ${{ inputs.environment }}"
           echo "Test Type: ${{ inputs.test_type }}"
@@ -66,19 +61,23 @@ jobs:
       - name: Run Smoke Tests
         if: ${{ inputs.test_type == 'smoke' }}
         run: npx playwright test --grep @smoke
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          APP_USERNAME: ${{ secrets.APP_USERNAME }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
       - name: Run Regression Tests
         if: ${{ inputs.test_type == 'regression' }}
         run: npx playwright test --grep @regression
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          APP_USERNAME: ${{ secrets.APP_USERNAME }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
 
       - name: Run All Tests
         if: ${{ inputs.test_type == 'all' }}
         run: npx playwright test
-        
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-test-results
-          path: test-results/
-          retention-days: 7
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          APP_USERNAME: ${{ secrets.APP_USERNAME }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
