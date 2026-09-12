@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
-test('Login to Naukri, update resume title and upload resume', async ({ page }) => {
+test('Login to Naukri, update resume title and upload resume @daily', async ({ page }) => {
 
-    const username = "bindsunil9336@gmail.com";
-    const password = "Sunil@572005";
-    const resumePath = "testdata/QA_Sunil_Resume_3+_EXP.pdf";
+    const username = "yadavsaurabh51107@gmail.com";
+    const password = "Saurabh@932005";
+    const resumePath = "testdata/QA_SaurabhYadav_Resume_2+.pdf";
 
     // Open Naukri login
     await page.goto('https://www.naukri.com/');
