@@ -7,6 +7,18 @@ test('Login to Naukri, update resume title and upload resume @smoke @daily', asy
     const password = "Saurabh@932005";
     const resumePath = "testdata/QA_SaurabhYadav_Resume_2+.pdf";
 
+
+    await page.goto('https://www.naukri.com/');
+
+    console.log('Current URL:', page.url());
+    console.log('Page Title:', await page.title());
+
+    if ((await page.title()).includes('Access Denied')) {
+        throw new Error('Naukri blocked the GitHub Actions runner with Access Denied.');
+    }
+
+    // await page.locator("//a[text()='Login']").click();
+
     // Open Naukri login
     await page.goto('https://www.naukri.com/');
 
