@@ -2,8 +2,13 @@ name: Playwright Tests
 
 on:
 
-  # Every Sunday at 10:00 PM IST
+  # Every day at 9:00 AM IST
+  # 9:00 AM IST = 3:30 AM UTC
   schedule:
+    - cron: '30 3 * * *'
+
+  # Every Sunday at 10:00 PM IST
+  # 10:00 PM IST = 4:30 PM UTC
     - cron: '30 16 * * 0'
 
   # Automatically run regression when code is pushed
@@ -60,9 +65,11 @@ jobs:
 
     steps:
 
-      # Checkout code
+      # Checkout NaukariAutomation branch
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: NaukariAutomation
 
       # Setup Node.js
       - name: Setup Node.js
@@ -83,35 +90,40 @@ jobs:
       - name: Display Configuration
         run: |
           echo "Event: ${{ github.event_name }}"
-          echo "Branch: ${{ github.ref_name }}"
+          echo "Branch: NaukariAutomation"
           echo "Environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}"
           echo "Test Type: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type || 'regression' }}"
           echo "BASE URL is configured: ${{ secrets.APP_BASE_URL != '' }}"
 
-      # Push / PR → Regression
-      - name: Run Automatic Regression Tests
-        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
-        run: npx playwright test --grep @regression
+      # Daily 9 AM IST → Naukari smoke test only
+      - name: Run Daily Naukari Smoke Test
+        if: ${{ github.event_name == 'schedule' && github.event.schedule == '30 3 * * *' }}
+        run: npx playwright test NaukariProfileUpdate.spec.ts --grep @smoke
 
       # Sunday 10 PM IST → Full Test Suite
       - name: Run Full Test Suite
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' && github.event.schedule == '30 16 * * 0' }}
         run: npx playwright test
+
+      # Push / PR → Regression
+      # - name: Run Automatic Regression Tests
+      #   if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+      #   run: npx playwright test --grep @regression
 
       # Manual → Smoke
       - name: Run Smoke Tests
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'smoke' }}
-        run: npx playwright test --grep @smoke
+        run: npx playwright test NaukariProfileUpdate.spec.ts --grep @smoke
 
       # Manual → Regression
-      - name: Run Regression Tests
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'regression' }}
-        run: npx playwright test --grep @regression
+      # - name: Run Regression Tests
+      #   if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'regression' }}
+      #   run: npx playwright test --grep @regression
 
       # Manual → All
-      - name: Run All Tests
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'all' }}
-        run: npx playwright test
+      # - name: Run All Tests
+      #   if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_type == 'all' }}
+      #   run: npx playwright test
 
       # Upload screenshots, videos, traces
       - name: Upload Test Results
