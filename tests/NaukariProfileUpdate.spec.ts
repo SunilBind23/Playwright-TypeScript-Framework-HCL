@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
-test('Login to Naukri, update resume title and upload resume @daily', async ({ page }) => {
+test('Login to Naukri, update resume title and upload resume @smoke @daily', async ({ page }) => {
 
     const username = "yadavsaurabh51107@gmail.com";
     const password = "Saurabh@932005";
